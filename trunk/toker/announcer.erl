@@ -10,8 +10,7 @@ handle_procs(Procs) ->
     receive
 	{new_process, Pid} ->
 	    ?M:handle_procs([Pid | Procs]);
-	{Pid, disconnect} ->
-	    Pid ! {announcer, bye},
+	{disconnect, Pid} ->
 	    ?M:handle_procs(lists:delete(Pid, Procs));
 	{broadcast, Message} ->
 	    lists:foreach(fun(P) -> P ! Message end, Procs),

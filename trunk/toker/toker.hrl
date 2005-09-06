@@ -6,5 +6,12 @@
 
 -define(DIR, "/tmp/kalender/").
 
+-define(DBFILE, "/tmp/eventdb").
+
 -define(PORT, 8000).
 
+-define(COMMANDS, ['ADDEVENT',
+		   'GETEVENT',
+		   'NUMRANGE',
+		   'DELEVENT',
+		   'DISCONNECT', 'SHUTDOWN']).

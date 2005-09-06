@@ -6,7 +6,7 @@
 start() -> toker:start(?PORT).
 
 start(Port) ->
-    register(writer, spawn(writer, start, [])),
+    %%register(writer, spawn(writer, start, [])),
     register(announcer, spawn(announcer, start, [])),
     register(event_handler, spawn(event_handler, start, [])),
     spawn(toker, start_listener, [Port]).
@@ -19,4 +19,5 @@ listen(Socket) ->
     {ok, Active_socket} = gen_tcp:accept(Socket),
     Pid = spawn(client, start, [Active_socket]),
     gen_tcp:controlling_process(Active_socket, Pid),
+    announcer ! {new_process, Pid},
     toker:listen(Socket).
