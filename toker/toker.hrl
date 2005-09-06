@@ -10,8 +10,9 @@
 
 -define(PORT, 8745).
 
--define(COMMANDS, ['ADDEVENT',
-		   'GETEVENT',
-		   'NUMRANGE',
-		   'DELEVENT',
-		   'DISCONNECT', 'SHUTDOWN']).
+-define(COMMANDS, ["ADDEVENT",
+		   "GETEVENT",
+		   "NUMRANGE",
+		   "DELEVENT",
+		   "DISCONNECT",
+		   "SHUTDOWN"]).
