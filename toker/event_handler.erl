@@ -31,6 +31,10 @@ handle_events() ->
 	    end,
 	    ?M:handle_events();
 
+	{Pid, get_event, Id} when Id < 1 ->
+	    Pid ! {event_handler, empty},
+	    ?M:handle_events();
+
 	{Pid, get_event, Id} ->
 	    case dets:lookup(eventdb, Id) of
 		[{Id, Event}] -> Pid ! {event_handler, Event};

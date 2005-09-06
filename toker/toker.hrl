@@ -8,7 +8,7 @@
 
 -define(DBFILE, "/tmp/eventdb").
 
--define(PORT, 8000).
+-define(PORT, 8745).
 
 -define(COMMANDS, ['ADDEVENT',
 		   'GETEVENT',

@@ -13,6 +13,7 @@ start(Socket) ->
 %%%
 
 handle_socket(Socket, Above) ->
+    %%inet:setopts(Socket, [{active, once}]),
     receive
 	{Above, send, Data} ->
 	    gen_tcp:send(Socket, Data ++ "\n"),
@@ -35,7 +36,7 @@ handle_socket(Socket, Above) ->
 	    Above ! {self(), connection_closed},
 	    gen_tcp:close(Socket);
 	{tcp, Socket, Data} ->
-	    Tokens = string:tokens(Data, " \r\n"),
+	    Tokens = string:tokens(string:left(Data, 255), " \r\n"),
 	    case Tokens of
 		[] -> []; % received empty line, do nothing
 		_ ->
