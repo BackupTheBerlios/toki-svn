@@ -31,6 +31,9 @@ handle_socket(Socket, Above) ->
 	{tcp, error, closed} ->
 	    Above ! {self(), connection_closed},
 	    gen_tcp:close(Socket);
+	{tcp_closed, _Port} ->
+	    Above ! {self(), connection_closed},
+	    gen_tcp:close(Socket);
 	{tcp, Socket, Data} ->
 	    Tokens = string:tokens(Data, " \r\n"),
 	    case Tokens of
