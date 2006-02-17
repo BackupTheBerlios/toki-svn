@@ -15,7 +15,7 @@ start(Socket) ->
 handle_socket(Socket, Above) ->
     receive
 	{Above, send, Data} ->
-	    gen_tcp:send(Socket, Data ++ "\n"),
+	    gen_tcp:send(Socket, [Data, "\n"]),
 	    ?M:handle_socket(Socket, Above);
 	{Above, send_error, Error} ->
 	    send_error(Socket, Error),
@@ -40,7 +40,7 @@ handle_socket(Socket, Above) ->
 		[] -> []; % received empty line, do nothing
 		[Command | Args] ->
 		    case parse_arguments(Args) of
-			error     -> send_error(Socket, Command ++ ": Malformed argument(s)");
+			error     -> send_error(Socket, [Command, ": Malformed argument(s)"]);
 			Arguments -> Above ! {self(), Command, Arguments}
 		    end
 	    end,
@@ -52,7 +52,7 @@ handle_socket(Socket, Above) ->
     end.
 
 send_error(Socket, Msg) ->
-    gen_tcp:send(Socket, "ERROR: " ++ Msg ++ "\n").
+    gen_tcp:send(Socket, ["ERROR: ", Msg, "\n"]).
 
 parse_arguments(Args) ->
     Integers = lists:map(fun(I) -> misc:read_integer(I) end, Args),
@@ -111,6 +111,14 @@ exhaust_queue(Q, Fun) ->
 %%%
 %%%
 
+-define(COMMANDS, ["ADDEVENT",
+		   "GETEVENT",
+		   "NUMRANGE",
+		   "DELEVENT",
+		   "DISCONNECT",
+		   "POLL",
+		   "SHUTDOWN"]).
+
 command("ADDEVENT", [S, D, L], Below) ->
     Below ! {self(), send, "HIT ME"},
     Below ! {self(), read_bytes, L},
@@ -126,8 +134,8 @@ command("GETEVENT", [Event], Below) ->
 	    Below ! {self(), send, "NONEXISTENT"};
 	{event_handler, #event{start=S, duration=D, text=T}} ->
 	    Below ! {self(), send, io_lib:format("~B ~B ~B~n~s", [S, D, string:len(T), T])}
-    end,
-    self() ! {self(), exhaust_queue};
+    end;
+%%self() ! {self(), exhaust_queue};
 
 command("DELEVENT", [Event], _Below) ->
     event_handler ! {self(), delete_event, Event};
@@ -137,13 +145,16 @@ command("NUMRANGE", [S, L], Below) ->
     receive
 	{event_handler, []}  -> Below ! {self(), send, "EMPTY"};
 	{event_handler, IDs} -> Below ! {self(), send, misc:integers_to_string(IDs)}
-    end,
-    self() ! {self(), exhaust_queue};
+    end;
+%%self() ! {self(), exhaust_queue};
 
 command("DISCONNECT", [], Below) ->
     event_handler ! {self(), disconnect},
     Below ! {self(), send, "BYE"},
     self() ! {self(), disconnect};
+
+command("POLL", [], _Below) ->
+    self() ! {self(), exhaust_queue};
 
 %%% This should not be in the real program
 command("SHUTDOWN", [], _Below) ->
@@ -152,6 +163,6 @@ command("SHUTDOWN", [], _Below) ->
 
 command(Command, _, Below) ->
     case lists:member(Command, ?COMMANDS) of
-	true  -> Below ! {self(), send_error, Command ++ ": Wrong number of arguments"};
-	false -> Below ! {self(), send_error, "Unknown command: " ++ Command}
+	true  -> Below ! {self(), send_error, [Command, ": Wrong number of arguments"]};
+	false -> Below ! {self(), send_error, ["Unknown command: ", Command]}
     end.
